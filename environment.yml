@@ -1,0 +1,49 @@
+name: ceres-rnaseq
+channels:
+  - conda-forge
+  - bioconda
+  - defaults
+dependencies:
+  - python>=3.10
+  - numpy
+  - pandas
+  - matplotlib
+  - openpyxl
+  - jupyterlab
+  - notebook
+  - r-base>=4.3
+  - r-irkernel
+
+  # R / CRAN packages used by notebooks
+  - r-data.table
+  - r-tidyverse
+  - r-dplyr
+  - r-tidyr
+  - r-stringr
+  - r-ggplot2
+  - r-ggrepel
+  - r-scales
+  - r-readxl
+  - r-openxlsx
+  - r-tidytext
+  - r-showtext
+  - r-sysfonts
+  - r-ragg
+  - r-patchwork
+  - r-glmmtmb
+  - r-emmeans
+
+  # Bioconductor packages used by notebooks
+  - bioconductor-deseq2
+  - bioconductor-topgo
+  - bioconductor-clusterprofiler
+  - bioconductor-go.db
+  - bioconductor-annotationdbi
+
+  # Bioinformatics command-line tools used by scripts/*.sh
+  - gatk4
+  - samtools
+  - bcftools
+  - htslib
+  - bedtools
+  - openjdk
