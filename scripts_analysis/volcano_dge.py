@@ -16,6 +16,10 @@ padj_col = "padj"
 ymax = 40.0
 
 plt.rcParams["font.family"] = "Times New Roman"
+plt.rcParams["mathtext.fontset"] = "custom"
+plt.rcParams["mathtext.rm"] = "Times New Roman"
+plt.rcParams["mathtext.it"] = "Times New Roman:italic"
+plt.rcParams["mathtext.bf"] = "Times New Roman:bold"
 
 df = pd.read_excel(input_file)
 
@@ -82,10 +86,10 @@ ax.tick_params(axis="both", which="major", labelsize=14)
 ax.legend(
     (not_sig, up, sig_mid, down),
     (
-        f"padj > {padj_cut:.2g}",
-        f"padj <= {padj_cut:.2g}, log2FC > 1",
-        f"padj <= {padj_cut:.2g}, |log2FC| <= 1",
-        f"padj <= {padj_cut:.2g}, log2FC < -1",
+        rf"$p_{{adj}} > {padj_cut:.2g}$",
+        rf"$p_{{adj}} \leq {padj_cut:.2g},\ \log_{{2}}\mathrm{{FC}} > 1$",
+        rf"$p_{{adj}} \leq {padj_cut:.2g},\ |\log_{{2}}\mathrm{{FC}}| \leq 1$",
+        rf"$p_{{adj}} \leq {padj_cut:.2g},\ \log_{{2}}\mathrm{{FC}} < -1$",
     ),
     loc="upper right",
     shadow=True,
