@@ -81,15 +81,15 @@ ax.axhline(-np.log10(padj_cut), color="grey", linestyle="--", linewidth=1)
 ax.axvline(0, color="black", linestyle=":", linewidth=1)
 ax.set_ylim(0, ymax)
 ax.set_xlabel(r"$\mathregular{\log_{2}}$ fold change (LowDO / HighDO)", fontsize=14)
-ax.set_ylabel(r"$\mathregular{-\log_{10}}$ adjusted p-value", fontsize=14)
+ax.set_ylabel(r"$\mathregular{-\log_{10}}$ adjusted $p$-value", fontsize=14)
 ax.tick_params(axis="both", which="major", labelsize=14)
 ax.legend(
     (not_sig, up, sig_mid, down),
     (
-        rf"$p_{{adj}} > {padj_cut:.2g}$",
-        rf"$p_{{adj}} \leq {padj_cut:.2g},\ \log_{{2}}\mathrm{{FC}} > 1$",
-        rf"$p_{{adj}} \leq {padj_cut:.2g},\ |\log_{{2}}\mathrm{{FC}}| \leq 1$",
-        rf"$p_{{adj}} \leq {padj_cut:.2g},\ \log_{{2}}\mathrm{{FC}} < -1$",
+        rf"$p_{{\mathrm{{adj}}}} > {padj_cut:.2g}$",
+        rf"$p_{{\mathrm{{adj}}}} \leq {padj_cut:.2g},\ \log_{{2}}\mathrm{{FC}} > 1$",
+        rf"$p_{{\mathrm{{adj}}}} \leq {padj_cut:.2g},\ |\log_{{2}}\mathrm{{FC}}| \leq 1$",
+        rf"$p_{{\mathrm{{adj}}}} \leq {padj_cut:.2g},\ \log_{{2}}\mathrm{{FC}} < -1$",
     ),
     loc="upper right",
     shadow=True,

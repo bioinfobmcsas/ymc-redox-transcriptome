@@ -201,10 +201,10 @@ library(dplyr)
 library(tidyr)
 library(GO.db)
 library(AnnotationDbi)
-library(openxlsx)
 library(ggplot2)
 library(stringr)
 library(tidytext)
+library(patchwork)
 library(showtext)
 library(sysfonts)
 library(ragg)
@@ -374,12 +374,7 @@ run_gsea_go <- function(
   sig_pruned[, Count := core_n]
   sig_pruned[, GeneRatio := core_n / setSize]
   sig_pruned[, Direction := ifelse(NES > 0, "Low DO", "High DO")]
-  
-  write.xlsx(
-    sig_pruned,
-    file = paste0("sig_", tolower(ont), "_pruned.xlsx"),
-    rowNames = FALSE
-  )
+  sig_pruned[, Direction := factor(Direction, levels = c("Low DO", "High DO"))]
   
   plot_df <- sig_pruned[
     order(Direction, p.adjust),
@@ -387,89 +382,110 @@ run_gsea_go <- function(
     by = Direction
   ]
   
-  plot_df[, Description_short := str_trunc(Description, width = 55)]
+  plot_df[, Description_short := str_wrap(Description, width = 42)]
+  plot_df[, label_lines := str_count(Description_short, fixed("\n")) + 1L]
+  panel_lines <- plot_df[, sum(label_lines), by = Direction]$V1
+  plot_height <- max(
+    8.5,
+    1.5 + 0.42 * max(panel_lines)
+  )
   
   plot_df[, Description_reordered := reorder_within(
     Description_short,
     GeneRatio,
     Direction
   )]
+
+  color_limits <- range(plot_df$p.adjust, na.rm = TRUE)
+  count_limits <- range(plot_df$Count, na.rm = TRUE)
   
-  p <- ggplot(plot_df, aes(
-    x = GeneRatio,
-    y = Description_reordered
-  )) +
-    geom_point(aes(
-      size = Count,
-      color = p.adjust
+  make_direction_plot <- function(direction) {
+    ggplot(plot_df[Direction == direction], aes(
+      x = GeneRatio,
+      y = Description_reordered
     )) +
-    facet_grid(
-      Direction ~ .,
-      scales = "free_y",
-      space = "free_y"
-    ) +
-    scale_y_reordered() +
-    scale_size_continuous(
-      name = "Count",
-      range = c(2, 7)
-    ) +
-    labs(
+      geom_point(aes(
+        size = Count,
+        color = p.adjust
+      )) +
+      facet_wrap(~ Direction) +
+      scale_y_reordered() +
+      scale_size_continuous(
+        name = "Count",
+        range = c(2, 7),
+        limits = count_limits
+      ) +
+      scale_color_continuous(
+        name = "FDR",
+        limits = color_limits
+      ) +
+      labs(
+        x = "GeneRatio",
+        y = NULL
+      ) +
+      theme_bw(
+        base_size = 12,
+        base_family = "Times New Roman"
+      ) +
+      theme(
+        axis.text.y = element_text(
+          size = 16,
+          colour = "black"
+        ),
+        axis.text.x = element_text(
+          size = 13,
+          colour = "black"
+        ),
+        axis.title.x = element_text(
+          size = 15,
+          colour = "black",
+          margin = margin(t = 8)
+        ),
+        strip.text = element_text(
+          size = 13,
+          face = "bold",
+          colour = "black"
+        ),
+        legend.title = element_text(
+          size = 13,
+          colour = "black"
+        ),
+        legend.text = element_text(
+          size = 12,
+          colour = "black"
+        ),
+        legend.key.size = unit(0.6, "cm"),
+        panel.grid.minor = element_blank()
+      )
+  }
+
+  p <- make_direction_plot("Low DO") |
+    make_direction_plot("High DO")
+
+  p <- p +
+    plot_layout(guides = "collect") +
+    plot_annotation(
       title = plot_titles[[ont]],
-      x = "GeneRatio",
-      y = NULL,
-      color = "FDR"
-    ) +
-    theme_bw(
-      base_size = 12,
-      base_family = "Times New Roman"
-    ) +
-    theme(
-      axis.text.y = element_text(
-        size = 13,
-        colour = "black"
-      ),
-      axis.text.x = element_text(
-        size = 13,
-        colour = "black"
-      ),
-      axis.title.x = element_text(
-        size = 15,
-        colour = "black",
-        margin = margin(t = 8)
-      ),
-      axis.title.y = element_text(
-        size = 15,
-        colour = "black"
-      ),
-      strip.text.y = element_text(
-        size = 13,
-        face = "bold",
-        colour = "black"
-      ),
-      plot.title = element_text(
-        hjust = 0.5,
-        face = "bold",
-        colour = "black",
-        size = 17,
-        margin = margin(b = 8)
-      ),
-      legend.title = element_text(
-        size = 13,
-        colour = "black"
-      ),
-      legend.text = element_text(
-        size = 12,
-        colour = "black"
-      ),
-      legend.key.size = unit(0.6, "cm"),
-      panel.grid.minor = element_blank()
+      theme = theme(
+        plot.title = element_text(
+          family = "Times New Roman",
+          hjust = 0.5,
+          face = "bold",
+          colour = "black",
+          size = 17,
+          margin = margin(b = 8)
+        )
+      )
     )
       
   ggsave(
-    filename = paste0("GO_", ont, ".pdf"),
+    filename = file.path(
+      project_root,
+      paste0("GO_", ont, "_dotplot_top15_up_down.pdf")
+    ),
     plot = p,
-    width = 11,
-    height = 9,
+    width = 15,
+    height = plot_height,
     device = cairo_pdf
   )
   
@@ -484,7 +500,7 @@ run_gsea_go <- function(
 
 results <- list()
 
-for (ont in c("BP", "MF", "CC")) {
+for (ont in c("BP", "MF")) {
   results[[ont]] <- run_gsea_go(
     ont = ont,
     term2gene = term2gene_list[[ont]],
@@ -495,4 +511,3 @@ for (ont in c("BP", "MF", "CC")) {
     top_n = 15
   )
 }
-

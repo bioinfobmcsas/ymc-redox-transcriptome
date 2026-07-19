@@ -11,6 +11,10 @@ input_dir <- file.path(project_root, "inputs")
 counts_file <- file.path(input_dir, "wrs3_s1_counts.txt")
 outfile_pdf <- file.path(project_root, "PCA_featureCounts_Low_High.pdf")
 
+minus_labels <- function(x) {
+  chartr("-", "−", scales::label_number()(x))
+}
+
 font_add("Times New Roman", regular = "/usr/share/fonts/TTF/Times.TTF")
 showtext_auto()
 
@@ -81,6 +85,8 @@ p <- ggplot(pca_df, aes(PC1, PC2, fill = condition, label = label)) +
     y = paste0("PC2 (", round(pca_var[2], 1), "%)"),
     fill = "Condition"
   ) +
+  scale_x_continuous(labels = minus_labels) +
+  scale_y_continuous(labels = minus_labels) +
   scale_fill_manual(values = c("Low" = "#4DBBD5", "High" = "#E64B35")) +
   theme_bw(base_size = 14, base_family = "Times New Roman") +
   theme(
