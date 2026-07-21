@@ -18,6 +18,8 @@ Some large intermediate inputs, including `inputs/loci_counts/`, are expected to
 
 Expression and GO-analysis inputs used for Figures 2-5 are provided in `inputs/`: `wrs3_s1_counts.txt`, `deseq2_LvsH_wrs3_s1_genes.xlsx`, and `sgd.gaf.gz`.
 
+`scripts_analysis/deseq2_wrs3_gene.r` runs the paired Low-DO versus High-DO DESeq2 analysis from `wrs3_s1_counts.txt` and writes `deseq2_LvsH_wrs3_s1_genes.xlsx` with GAF-compatible gene symbols.
+
 ## Pipeline Outputs Used As Inputs
 
 The preprocessing scripts in `scripts/` produce the intermediate files consumed by the figure-reproduction scripts:

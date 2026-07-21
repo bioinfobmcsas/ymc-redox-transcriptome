@@ -3,6 +3,11 @@ library(topGO)
 
 project_root <- normalizePath(if (dir.exists("inputs")) "." else "..", mustWork = TRUE)
 input_dir <- file.path(project_root, "inputs")
+gsea_output_dir <- Sys.getenv(
+  "GSEA_OUTPUT_DIR",
+  unset = file.path(project_root, "results", "GSEA_current_GAF")
+)
+dir.create(gsea_output_dir, recursive = TRUE, showWarnings = FALSE)
 
 gaf <- fread(
   file.path(input_dir, "sgd.gaf.gz"),
@@ -500,7 +505,17 @@ run_gsea_go <- function(
 
 results <- list()
 
-for (ont in c("BP", "MF")) {
+ontologies_to_run <- trimws(strsplit(
+  Sys.getenv("GSEA_ONTOLOGIES", unset = "BP,MF"),
+  ",",
+  fixed = TRUE
+)[[1]])
+
+if (!all(ontologies_to_run %in% c("BP", "MF", "CC"))) {
+  stop("GSEA_ONTOLOGIES must contain only BP, MF, and/or CC")
+}
+
+for (ont in ontologies_to_run) {
   results[[ont]] <- run_gsea_go(
     ont = ont,
     term2gene = term2gene_list[[ont]],
@@ -510,4 +525,27 @@ for (ont in c("BP", "MF")) {
     p_cutoff = 0.05,
     top_n = 15
   )
+
+  if (!is.null(results[[ont]])) {
+    export_columns <- c(
+      "ID", "Description", "setSize", "enrichmentScore", "NES",
+      "pvalue", "p.adjust", "qvalue", "rank", "leading_edge",
+      "core_enrichment", "core_n", "GeneRatio"
+    )
+    sig_pruned_export <- copy(results[[ont]]$sig_pruned)[, ..export_columns]
+    output_file <- file.path(
+      gsea_output_dir,
+      paste0("sig_", tolower(ont), "_pruned.xlsx")
+    )
+    openxlsx::write.xlsx(
+      sig_pruned_export,
+      output_file,
+      sheetName = "Sheet 1",
+      overwrite = TRUE
+    )
+    cat(
+      "Wrote", nrow(sig_pruned_export),
+      "pruned significant", ont, "terms to", output_file, "\n"
+    )
+  }
 }
