@@ -47,4 +47,4 @@ This repository reproduces manuscript Figures 2-10 from the scripts/notebooks be
 | 7 | `statistics_mismatches_mutations.R` | `betabinomial_estimated_MR_and_fold_change.pdf` |
 | 8 | `statistics_mismatches_mutations.R` | `nbinom_estimated_VR_and_fold_change.pdf` |
 | 9 | `recurrence_calculation.R` | `high_low_recurrence.pdf` |
-| 10 | `scripts_analysis/shared_sites.R` | `shared_site_subtraction.pdf` |
+| 10 | `shared_sites.R` | `shared_site_subtraction.pdf` |

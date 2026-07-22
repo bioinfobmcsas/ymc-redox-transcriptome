@@ -13,9 +13,9 @@ callable_file <- file.path(input_dir, "callable_base_counts.tsv")
 outfile_pdf <- file.path(project_root, "shared_site_subtraction.pdf")
 
 mut_levels <- c(
-  "C>T/G>A",
   "C>A/G>T",
   "C>G/G>C",
+  "C>T/G>A",
   "T>A/A>T",
   "T>C/A>G",
   "T>G/A>C"
@@ -141,33 +141,45 @@ make_rates <- function(df, subtraction_label) {
 }
 
 plot_df <- bind_rows(
-  make_rates(variant_df, "Before subtraction"),
+  make_rates(variant_df, "Before shared-site subtraction"),
   make_rates(filter(variant_df, !phase_shared), "After shared-site subtraction")
 ) %>%
   mutate(
     subtraction = factor(
       subtraction,
-      levels = c("Before subtraction", "After shared-site subtraction")
+      levels = c("Before shared-site subtraction", "After shared-site subtraction")
     ),
     mut_type = factor(mut_type, levels = mut_levels)
   )
 
-p <- ggplot(plot_df, aes(x = cond, y = candidate_rate, group = rep_id)) +
-  geom_line(color = "grey45", linewidth = 0.45) +
-  geom_point(aes(fill = cond), shape = 21, size = 2.8, color = "black", stroke = 0.25) +
-  facet_grid(subtraction ~ mut_type, scales = "free_y", labeller = labeller(mut_type = mut_plot_labels)) +
-  scale_fill_manual(values = c("H" = "#4DBBD5", "L" = "#E64B35")) +
+p <- ggplot(
+  plot_df,
+  aes(
+    x = cond,
+    y = candidate_rate,
+    group = rep_id,
+    color = rep_id
+  )
+) +
+  geom_line(linewidth = 0.55) +
+  geom_point(size = 2.8) +
+  facet_grid(subtraction ~ mut_type, labeller = labeller(mut_type = mut_plot_labels)) +
+  scale_color_manual(
+    values = c("1" = "#F8766D", "2" = "#00BA38", "3" = "#619CFF")
+  ) +
   labs(
     x = NULL,
-    y = "Candidate-site rate",
-    fill = "Condition"
+    y = "VR",
+    color = "Replicate"
   ) +
   theme_bw(base_size = 13, base_family = base_family) +
   theme(
     text = element_text(family = base_family, colour = "black"),
+    strip.background = element_rect(fill = "white", colour = "black"),
     strip.text = element_text(face = "bold", colour = "black"),
     axis.text = element_text(colour = "black"),
     axis.title = element_text(colour = "black"),
+    legend.title = element_text(face = "bold", colour = "black"),
     panel.grid.minor = element_blank(),
     legend.position = "right"
   )
